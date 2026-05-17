@@ -56,6 +56,17 @@ body {
     }
 }
 
+.is-flex {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.flex-center-hor {
+    justify-content: center;
+}
+.flex-center-ver {
+    align-items: center;
+}
 
 input[type=text] {
     background-color: transparent;
@@ -64,4 +75,27 @@ input[type=text] {
     padding: 5px;
     color: var(--primary-light);
     width: 300px;
+}
+
+input[type="radio"] {
+    transform: scale(3);
+    margin: 20px;
+}
+label {
+    font-size: 20px;
+}
+
+#main-display {
+    height: calc(100vh - 100px);
+}
+#main-display-img-container {
+    display: block;
+    width: 100%;
+    height: 100%;
+
+}
+#main-display-img-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
