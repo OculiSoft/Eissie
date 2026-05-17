@@ -12,6 +12,8 @@ interface PocketBaseItem
 interface PocketBaseInfo
 {
     items: PocketBaseItem[]
+    totalItems: number
+    perPage: number
 }
 
 function randInt(min: number, max: number): number {
@@ -38,9 +40,15 @@ export default function MainForm() {
         fetch(apiLink)
         .then(x => x.json())
         .then((json : PocketBaseInfo) => {
-            const index = randInt(0, json.items.length - 1)
-            const item = json.items[index];
-            setImage(`${getImageBaseUrl()}${item.collectionId}/${item.id}/${item.field ?? item.File}`);
+            const item = randInt(0, json.totalItems - 1);
+            const page = Math.floor(item / json.perPage);
+            fetch(`${apiLink}?page=${page}`)
+            .then(x => x.json())
+            .then(json => {
+                const index = item % json.perPage
+                const elem = json.items[index];
+                setImage(`${getImageBaseUrl()}${elem.collectionId}/${elem.id}/${elem.field ?? elem.File}`);
+            })
         });
     }
 
