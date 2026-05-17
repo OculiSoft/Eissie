@@ -120,6 +120,6 @@ label {
     position: absolute;
     background-color: red;
     border-radius: var(--border-radius);
-    bottom: 0;
+    top: 0;
     left: 0;
 }
