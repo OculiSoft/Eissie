@@ -5,7 +5,8 @@ import { getImageBaseUrl, getInfoEndpoint } from "./Configuration"
 interface PocketBaseItem
 {
     collectionId: string
-    field: string
+    field?: string
+    File?: string
     id: string
 }
 interface PocketBaseInfo
@@ -19,26 +20,27 @@ function randInt(min: number, max: number): number {
 
 export default function MainForm() {
     const [duration, setDuration] = useState<number>(30);
-    const [dataSource, setDataSource] = useState<string | null>(null);
     const [intervalId, setIntervalId] = useState<number | null>(null);
+    const [apiLink, setApiLink] = useState(getInfoEndpoint());
     const [image, setImage] = useState<string | null>();
 
-    useEffect(() => {
+    function updateInterval() {
         if (intervalId !== null) {
             clearInterval(intervalId);
         }
 
         setIntervalId(setInterval(updateImage, duration * 1000));
         updateImage();
-    }, [ duration ]);
+    }
+    useEffect(updateInterval, [ duration, apiLink ]);
 
     function updateImage() {
-        fetch(getInfoEndpoint())
+        fetch(apiLink)
         .then(x => x.json())
         .then((json : PocketBaseInfo) => {
             const index = randInt(0, json.items.length - 1)
             const item = json.items[index];
-            setImage(`${getImageBaseUrl()}${item.collectionId}/${item.id}/${item.field}`);
+            setImage(`${getImageBaseUrl()}${item.collectionId}/${item.id}/${item.field ?? item.File}`);
         });
     }
 
@@ -53,7 +55,17 @@ export default function MainForm() {
             <input type="radio" id="duration-600" checked={duration == 600} onChange={() => setDuration(600)} />
             <label htmlFor="duration-600">10m</label>
             <br/>
-            <input type="text" />
+            <input type="text" onChange={e => setApiLink(e.target.value)} value={apiLink} />
+            <br/>
+            <button onClick={() => {
+                if (intervalId === null) {
+                    updateInterval();
+                } else {
+                    clearInterval(intervalId);
+                    setIntervalId(null);
+                }
+            }}>{ intervalId === null ? "Resume" : "Pause" }</button>
+            <button onClick={updateInterval}>Skip</button>
         </div>
         <div className="container box is-flex flex-center-hor" id="main-display">
             {

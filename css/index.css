@@ -68,13 +68,26 @@ body {
     align-items: center;
 }
 
+button, .button {
+    background-color: transparent;
+    border: var(--border);
+    color: white;
+    border-radius: var(--border-radius);
+    padding: 10px;
+    cursor: pointer;
+    font-family: "Quantico", sans-serif;
+    font-size: 15px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
 input[type=text] {
     background-color: transparent;
     border: var(--border);
     border-radius: var(--border-radius);
     padding: 5px;
     color: var(--primary-light);
-    width: 300px;
+    width: calc(100% - 10px);
 }
 
 input[type="radio"] {
@@ -86,7 +99,7 @@ label {
 }
 
 #main-display {
-    height: calc(100vh - 100px);
+    height: calc(100vh - 190px);
 }
 #main-display-img-container {
     display: block;
