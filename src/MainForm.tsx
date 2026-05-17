@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { getImageBaseUrl, getInfoEndpoint } from "./Configuration"
 
 
@@ -22,16 +22,19 @@ function randInt(min: number, max: number): number {
 
 export default function MainForm() {
     const [duration, setDuration] = useState<number>(30);
-    const [intervalId, setIntervalId] = useState<number | null>(null);
+    const intervalRef = useRef<number | null>(null);
+    const timerRef = useRef<number | null>(null);
     const [apiLink, setApiLink] = useState(getInfoEndpoint());
-    const [image, setImage] = useState<string | null>();
+    const [image, setImage] = useState<string | null>(null);
+    const [timer, setTimer] = useState<number>(100);
+    const [paused, setPaused] = useState(false);
 
     function updateInterval() {
-        if (intervalId !== null) {
-            clearInterval(intervalId);
+        if (intervalRef.current !== null) {
+            clearInterval(intervalRef.current);
         }
 
-        setIntervalId(setInterval(updateImage, duration * 1000));
+        intervalRef.current = setInterval(updateImage, duration * 1000);
         updateImage();
     }
     useEffect(updateInterval, [ duration, apiLink ]);
@@ -41,13 +44,16 @@ export default function MainForm() {
         .then(x => x.json())
         .then((json : PocketBaseInfo) => {
             const item = randInt(0, json.totalItems - 1);
-            const page = Math.floor(item / json.perPage);
+            const page = Math.floor(item / json.perPage) + 1;
             fetch(`${apiLink}?page=${page}`)
             .then(x => x.json())
             .then(json => {
                 const index = item % json.perPage
                 const elem = json.items[index];
                 setImage(`${getImageBaseUrl()}${elem.collectionId}/${elem.id}/${elem.field ?? elem.File}`);
+                setTimer(0);
+                if (timerRef.current !== null) clearInterval(timerRef.current);
+                timerRef.current = setInterval(() => { setTimer(x => x + 1) }, 1000);
             })
         });
     }
@@ -66,19 +72,26 @@ export default function MainForm() {
             <input type="text" onChange={e => setApiLink(e.target.value)} value={apiLink} />
             <br/>
             <button onClick={() => {
-                if (intervalId === null) {
+                if (paused) {
                     updateInterval();
+                    setPaused(false);
                 } else {
-                    clearInterval(intervalId);
-                    setIntervalId(null);
+                    clearInterval(intervalRef.current!);
+                    clearInterval(timerRef.current!);
+                    intervalRef.current = null;
+                    timerRef.current = null;
+                    setPaused(true);
                 }
-            }}>{ intervalId === null ? "Resume" : "Pause" }</button>
+            }}>{ paused ? "Resume" : "Pause" }</button>
             <button onClick={updateInterval}>Skip</button>
         </div>
         <div className="container box is-flex flex-center-hor" id="main-display">
             {
                 image ? <div id="main-display-img-container"><img src={image} /></div> : <></> 
             }
+            <div id="timer" style={{
+                width: (1 - timer / duration) * 100 + "%"
+            }}></div>
         </div>
     </> 
 }
