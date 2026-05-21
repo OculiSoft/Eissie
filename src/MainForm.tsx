@@ -21,13 +21,13 @@ function randInt(min: number, max: number): number {
 }
 
 export default function MainForm() {
-    const [duration, setDuration] = useState<number>(30);
-    const intervalRef = useRef<number | null>(null);
-    const timerRef = useRef<number | null>(null);
-    const [apiLink, setApiLink] = useState(getInfoEndpoint());
-    const [image, setImage] = useState<string | null>(null);
-    const [timer, setTimer] = useState<number>(100);
-    const [paused, setPaused] = useState(false);
+    const [duration, setDuration] = useState<number>(30); // Time between 2 images
+    const intervalRef = useRef<number | null>(null); // setInterval to display the next image
+    const timerRef = useRef<number | null>(null); // setInterval related to intervalRef, to display the progression of the timer
+    const [apiLink, setApiLink] = useState(getInfoEndpoint()); // Endpoint used for fetch
+    const [image, setImage] = useState<string | null>(null); // Image displayed
+    const [timer, setTimer] = useState<number>(100); // Time of the timer between 0 and 100
+    const [paused, setPaused] = useState(false); // Is the timer paused
 
     function updateInterval() {
         if (intervalRef.current !== null) {
@@ -36,7 +36,15 @@ export default function MainForm() {
 
         intervalRef.current = setInterval(updateImage, duration * 1000);
         updateImage();
+        setPaused(false);
     }
+
+    function resume() {
+        const timeLeft = duration - timer;
+        intervalRef.current = setInterval(updateImage, timeLeft * 1000);
+        timerRef.current = setInterval(() => { setTimer(x => x + 1) }, 1000);
+    }
+
     useEffect(updateInterval, [ duration, apiLink ]);
 
     function updateImage() {
@@ -73,7 +81,7 @@ export default function MainForm() {
             <br/>
             <button onClick={() => {
                 if (paused) {
-                    updateInterval();
+                    resume();
                     setPaused(false);
                 } else {
                     clearInterval(intervalRef.current!);
